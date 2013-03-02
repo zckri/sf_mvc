@@ -1,0 +1,32 @@
+<?php
+/* @var $this SiteController */
+
+$this->pageTitle=Yii::app()->name;
+?>
+
+<div class="wrappez">
+<?php
+
+$tmp = Category::model()->findAll();
+$filter = CHtml::listData($tmp, 'id','runame');
+
+$this->widget('bootstrap.widgets.TbGridView', array(
+
+	'id'=>'post-grid',
+	'type'=>'striped',
+	'dataProvider' => $categoryModel->search(),
+	'filter'=>$cateogryModel,
+	'responsiveTable' => true,
+	'template' => "{items}{pager}",
+	'columns' => array(
+			'id',
+			'runame','kzname','enname',
+			array(
+					'header' => Yii::t('ses', 'Edit'),
+					'class' => 'bootstrap.widgets.TbButtonColumn',
+					'template' => '{update} {delete}',
+				),
+		),
+));
+?>
+</div>
