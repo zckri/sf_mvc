@@ -2,3 +2,4 @@ upload/*
 images/*
 assets/*
 protected/config/*
+vendor/*
