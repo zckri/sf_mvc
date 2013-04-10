@@ -7,23 +7,29 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
-use Symfony\Component\Finder\Finder;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Routing\Loader\YamlFileLoader;
 
-$finder = new Finder();
 
-$iterator = $finder->files()->name('*.php')->in(CONTROLLERS);
+$locator = new FileLocator(array(__DIR__));
+$loader = new YamlFileLoader($locator);
+$routes = $loader->load('routes.yml');
 
-$routes = new RouteCollection();
+// $finder = new Finder();
 
-// Fill the routing table with controller names
-foreach($iterator as $controller)
- {
- 	$cname = preg_replace('/\.[^.]*$/', '', $controller->getFilename());
- 	$cn = preg_replace('/controller|\.php/', '', strtolower($controller->getFilename()));
- 	$link = "/{$cn}";
- 	$route = new Route(strtolower($link), array('controller' => $cname));
- 	$routes->add($cname, $route);
- }
+// $iterator = $finder->files()->name('*.php')->in(CONTROLLERS);
+
+// $routes = new RouteCollection();
+
+// // Fill the routing table with controller names
+// foreach($iterator as $controller)
+//  {
+//  	$cname = preg_replace('/\.[^.]*$/', '', $controller->getFilename());
+//  	$cn = preg_replace('/controller|\.php/', '', strtolower($controller->getFilename()));
+//  	$link = "/{$cn}";
+//  	$route = new Route(strtolower($link), array('controller' => $cname));
+//  	$routes->add($cname, $route);
+//  }
 
 $request = Request::createFromGlobals();
 
@@ -33,11 +39,20 @@ $context->fromRequest($request);
 $matcher = new UrlMatcher($routes, $context);
 
 if($request->query->has('r')){
-	$arr = $matcher->match($request->query->get('r'));
-	if(isset($arr)){
-		include_once CONTROLLERS.$arr['controller'].'.php';
-		$runClass = 'Kapo\\Controllers\\'.$arr['controller'];
-		$run = new $runClass();
-		$run->indexAction();
+	try{
+		$arr = $matcher->match($request->query->get('r'));
+	}catch(Exception $e){
+		echo '[Route not found!]';
+		die();
+	}
+	if(isset($arr['_controller'])){
+		list($controllerName,$actionName) = explode('::',$arr['_controller']);
+		
+		if(isset($controllerName) && isset($actionName)){
+			include_once CONTROLLERS.$controllerName.'.php';
+			$runClass = 'Kapo\\Controllers\\'.$controllerName;
+			$run = new $runClass();
+			$run->$actionName();
+		}
 	}
 }

@@ -1,0 +1,8 @@
+# routes.yml
+route1:
+    pattern: /first/{id}
+    defaults: { _controller: 'FirstController::indexAction', id: 0 }
+
+route2:
+    pattern: /test
+    defaults: { _controller: 'TestController::indexAction' }
